@@ -1,0 +1,7 @@
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18048: 'razorpayWindow.Razorpay' is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/cart/cart.component.ts:132:23:
+[37m      132 │   const checkout = new [32mrazorpayWindow.Razorpay[37m({
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m

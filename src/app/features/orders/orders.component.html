@@ -1,0 +1,67 @@
+<section class="grid gap-6">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-3xl font-extrabold tracking-normal">My orders</h1>
+      <p class="text-sm text-zinc-600 dark:text-zinc-300">Track table service and home delivery from one place.</p>
+    </div>
+    <a mat-flat-button color="primary" routerLink="/menu">
+      <mat-icon>add</mat-icon>
+      New order
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="flex min-h-64 items-center justify-center"><mat-spinner diameter="42" /></div>
+  } @else {
+    <div class="grid gap-4">
+      @for (order of orders(); track order.id) {
+        <mat-expansion-panel class="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <span class="font-bold">{{ order.orderNumber }}</span>
+            </mat-panel-title>
+            <mat-panel-description class="hidden items-center justify-end gap-3 sm:flex">
+              <span class="status-chip" [ngClass]="statusClass(order.status)">{{ order.status }}</span>
+              <span>{{ order.grandTotal | currency:'INR':'symbol':'1.0-0' }}</span>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <div class="grid gap-4">
+            <div class="grid gap-2 text-sm sm:grid-cols-4">
+              <div><strong>Type</strong><br>{{ order.orderType }}</div>
+              <div><strong>Payment</strong><br>{{ order.paymentMethod }} · {{ order.paymentStatus }}</div>
+              <div><strong>Place</strong><br>{{ order.tableNumber || order.deliveryAddress }}</div>
+              <div><strong>Placed</strong><br>{{ order.createdAt | date:'medium' }}</div>
+            </div>
+
+            <mat-divider />
+
+            <div class="grid gap-2">
+              @for (item of order.items; track item.id) {
+                <div class="flex items-center justify-between gap-3 text-sm">
+                  <span>{{ item.quantity }} x {{ item.menuItemName }}</span>
+                  <strong>{{ item.lineTotal | currency:'INR':'symbol':'1.0-0' }}</strong>
+                </div>
+              }
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <span class="text-lg font-extrabold">Total {{ order.grandTotal | currency:'INR':'symbol':'1.0-0' }}</span>
+              <button mat-button color="warn" [disabled]="!canCancel(order.status)" (click)="cancel(order)">
+                <mat-icon>cancel</mat-icon>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </mat-expansion-panel>
+      } @empty {
+        <div class="app-panel grid min-h-56 place-items-center p-8 text-center">
+          <div>
+            <mat-icon class="mb-2 text-4xl text-zinc-400">receipt_long</mat-icon>
+            <p class="font-semibold">No orders yet.</p>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</section>

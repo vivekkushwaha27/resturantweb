@@ -1,0 +1,117 @@
+<section class="grid gap-6">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-3xl font-extrabold tracking-normal">Admin control center</h1>
+      <p class="text-sm text-zinc-600 dark:text-zinc-300">Manage users, roles, orders, menu, pricing, discounts, and availability.</p>
+    </div>
+    <button mat-icon-button matTooltip="Refresh admin data" (click)="load()">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="flex min-h-64 items-center justify-center"><mat-spinner diameter="42" /></div>
+  } @else {
+    @if (stats(); as dashboard) {
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+        <div class="app-panel p-4"><p class="text-sm text-zinc-500">Pending</p><strong class="text-2xl">{{ dashboard.pendingOrders }}</strong></div>
+        <div class="app-panel p-4"><p class="text-sm text-zinc-500">Preparing</p><strong class="text-2xl">{{ dashboard.preparingOrders }}</strong></div>
+        <div class="app-panel p-4"><p class="text-sm text-zinc-500">Delivered today</p><strong class="text-2xl">{{ dashboard.deliveredToday }}</strong></div>
+        <div class="app-panel p-4"><p class="text-sm text-zinc-500">Revenue</p><strong class="text-2xl">{{ dashboard.revenueToday | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+        <div class="app-panel p-4"><p class="text-sm text-zinc-500">Active users</p><strong class="text-2xl">{{ dashboard.activeUsers }}</strong></div>
+        <div class="app-panel p-4"><p class="text-sm text-zinc-500">Menu items</p><strong class="text-2xl">{{ dashboard.menuItems }}</strong></div>
+      </div>
+    }
+
+    <mat-tab-group class="app-panel">
+      <mat-tab label="Users">
+        <div class="grid gap-3 p-4">
+          @for (user of users(); track user.id) {
+            <div class="grid gap-3 rounded-lg border border-zinc-200 p-3 md:grid-cols-[1fr_auto_auto] dark:border-zinc-800">
+              <div>
+                <h2 class="font-bold">{{ user.fullName }}</h2>
+                <p class="text-sm text-zinc-500">{{ user.email }} · {{ user.phone || 'No phone' }}</p>
+              </div>
+              <mat-form-field appearance="outline" class="w-40">
+                <mat-label>Role</mat-label>
+                <mat-select [value]="user.role" (selectionChange)="updateRole(user, $event.value)">
+                  @for (role of roles; track role) {
+                    <mat-option [value]="role">{{ role }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-slide-toggle [checked]="user.isActive" (change)="setActive(user, $event.checked)">Active</mat-slide-toggle>
+            </div>
+          }
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Menu">
+        <div class="grid gap-6 p-4 xl:grid-colsz-[360px_1fr]">
+          <div class="grid gap-4">
+            <form class="grid gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800" [formGroup]="categoryForm" (ngSubmit)="saveCategory()">
+              <h2 class="font-extrabold">Category</h2>
+              <mat-form-field appearance="outline"><mat-label>Name</mat-label><input matInput formControlName="name"></mat-form-field>
+              <mat-form-field appearance="outline"><mat-label>Description</mat-label><input matInput formControlName="description"></mat-form-field>
+              <mat-form-field appearance="outline"><mat-label>Display order</mat-label><input matInput type="number" formControlName="displayOrder"></mat-form-field>
+              <mat-slide-toggle formControlName="isActive">Active</mat-slide-toggle>
+              <button mat-flat-button color="primary" type="submit"><mat-icon>save</mat-icon>Save category</button>
+            </form>
+
+            <form class="grid gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800" [formGroup]="itemForm" (ngSubmit)="saveItem()">
+              <h2 class="font-extrabold">Menu item</h2>
+              <mat-form-field appearance="outline">
+                <mat-label>Category</mat-label>
+                <mat-select formControlName="categoryId">
+                  @for (category of categories(); track category.id) {
+                    <mat-option [value]="category.id">{{ category.name }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline"><mat-label>Name</mat-label><input matInput formControlName="name"></mat-form-field>
+              <mat-form-field appearance="outline"><mat-label>Description</mat-label><textarea matInput rows="2" formControlName="description"></textarea></mat-form-field>
+              <div class="grid grid-cols-2 gap-3">
+                <mat-form-field appearance="outline"><mat-label>Price</mat-label><input matInput type="number" formControlName="price"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Discount %</mat-label><input matInput type="number" formControlName="discountPercent"></mat-form-field>
+              </div>
+              <mat-form-field appearance="outline"><mat-label>Image URL</mat-label><input matInput formControlName="imageUrl"></mat-form-field>
+              <mat-form-field appearance="outline"><mat-label>Spice level</mat-label><input matInput formControlName="spiceLevel"></mat-form-field>
+              <div class="flex gap-4">
+                <mat-slide-toggle formControlName="isVegetarian">Veg</mat-slide-toggle>
+                <mat-slide-toggle formControlName="isAvailable">Available</mat-slide-toggle>
+              </div>
+              <button mat-flat-button color="primary" type="submit"><mat-icon>save</mat-icon>Save item</button>
+            </form>
+          </div>
+
+          <div class="grid gap-3">
+            @for (item of items(); track item.id) {
+              <div class="grid gap-3 rounded-lg border border-zinc-200 p-3 md:grid-cols-[1fr_auto] dark:border-zinc-800">
+                <div>
+                  <h3 class="font-bold">{{ item.name }}</h3>
+                  <p class="text-sm text-zinc-500">{{ item.categoryName }} · {{ item.finalPrice | currency:'INR':'symbol':'1.0-0' }} · {{ item.discountPercent }}% off</p>
+                </div>
+                <mat-slide-toggle [checked]="item.isAvailable" (change)="setAvailability(item, $event.checked)">Available</mat-slide-toggle>
+              </div>
+            }
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Orders">
+        <div class="grid gap-3 p-4">
+          @for (order of orders(); track order.id) {
+            <div class="grid gap-2 rounded-lg border border-zinc-200 p-3 md:grid-cols-[1fr_auto_auto] dark:border-zinc-800">
+              <div>
+                <h2 class="font-bold">{{ order.orderNumber }}</h2>
+                <p class="text-sm text-zinc-500">{{ order.customerName }} · {{ order.orderType }} · {{ order.tableNumber || order.deliveryAddress }}</p>
+              </div>
+              <span class="status-chip bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">{{ order.status }}</span>
+              <strong>{{ order.grandTotal | currency:'INR':'symbol':'1.0-0' }}</strong>
+            </div>
+          }
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  }
+</section>

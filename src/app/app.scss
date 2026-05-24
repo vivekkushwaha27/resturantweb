@@ -1,0 +1,27 @@
+.nav-link {
+  border-radius: 8px;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.mobile-nav {
+  min-width: 0;
+  height: 54px;
+  border-radius: 8px;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  line-height: 1.1;
+}
+
+.active-link {
+  background: rgba(22, 128, 60, 0.12);
+  color: #16803c;
+}
+
+:host-context(.dark) .active-link {
+  color: #86efac;
+  background: rgba(134, 239, 172, 0.14);
+}

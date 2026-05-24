@@ -1,0 +1,93 @@
+<section class="grid gap-6">
+  <div class="grid gap-4 rounded-lg bg-zinc-950 p-6 text-white shadow-soft md:grid-cols-[1fr_auto] dark:bg-zinc-900">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-wide text-amber-300">Live restaurant menu</p>
+      <h1 class="mt-2 text-3xl font-extrabold tracking-normal">Choose dine-in table service or home delivery.</h1>
+    </div>
+    <a mat-flat-button color="accent" routerLink="/cart" class="self-end">
+      <mat-icon>shopping_cart_checkout</mat-icon>
+      Go to cart
+    </a>
+  </div>
+
+  <div class="app-panel grid gap-4 p-4 md:grid-cols-[1fr_1fr_auto]">
+    <mat-form-field appearance="outline">
+      <mat-label>Search food</mat-label>
+      <input matInput [(ngModel)]="search" (keyup.enter)="loadItems()">
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Category</mat-label>
+      <mat-select [(value)]="categoryId" (selectionChange)="loadItems()">
+        <mat-option value="">All categories</mat-option>
+        @for (category of categories(); track category.id) {
+          <mat-option [value]="category.id">{{ category.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <div class="flex items-center gap-3 pb-4 md:pb-0">
+      <mat-slide-toggle [(ngModel)]="vegetarianOnly" (change)="loadItems()">Veg</mat-slide-toggle>
+      <button mat-icon-button matTooltip="Refresh menu" (click)="loadItems()">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="flex min-h-64 items-center justify-center">
+      <mat-spinner diameter="42" />
+    </div>
+  } @else {
+    <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+      @for (item of items(); track item.id) {
+        <mat-card class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+          <div class="aspect-[16/10] bg-zinc-200 dark:bg-zinc-800">
+            <img
+              [src]="item.imageUrl || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80'"
+              [alt]="item.name"
+              class="h-full w-full object-cover"
+            >
+          </div>
+          <mat-card-content class="grid gap-3 p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h2 class="text-lg font-bold">{{ item.name }}</h2>
+                <p class="text-sm text-zinc-600 dark:text-zinc-300">{{ item.description }}</p>
+              </div>
+              @if (item.discountPercent > 0) {
+                <span class="status-chip bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200">
+                  {{ item.discountPercent }}% off
+                </span>
+              }
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <mat-chip>{{ item.categoryName }}</mat-chip>
+              <mat-chip>{{ item.isVegetarian ? 'Veg' : 'Non veg' }}</mat-chip>
+              @if (item.spiceLevel) {
+                <mat-chip>{{ item.spiceLevel }}</mat-chip>
+              }
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-2xl font-extrabold">{{ item.finalPrice | currency:'INR':'symbol':'1.0-0' }}</span>
+                @if (item.discountPercent > 0) {
+                  <span class="ml-2 text-sm text-zinc-500 line-through">{{ item.price | currency:'INR':'symbol':'1.0-0' }}</span>
+                }
+              </div>
+              <button mat-flat-button color="primary" (click)="addToCart(item)">
+                <mat-icon>add_shopping_cart</mat-icon>
+                Add
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      } @empty {
+        <div class="app-panel p-8 text-center text-zinc-600 dark:text-zinc-300">No menu items match this filter.</div>
+      }
+    </div>
+  }
+</section>
